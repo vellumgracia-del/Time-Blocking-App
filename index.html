@@ -56,7 +56,6 @@
         .dark .bg-grid {
             background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
         }
-        /* Fix for scroll in Focus Tab */
         .scroll-container { overflow-y: auto; -webkit-overflow-scrolling: touch; }
         @media (min-width: 768px) { .view-section { display: flex !important; animation: none; } }
     </style>
@@ -83,7 +82,7 @@
     <!-- HEADER -->
     <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 shrink-0 z-30 dark:bg-gray-800 dark:border-gray-700 transition-colors duration-200">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-gray-900 flex items-center justify-center text-white dark:bg-white dark:text-gray-900">
+            <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white shadow-sm">
                 <i class="fa-solid fa-layer-group text-sm"></i>
             </div>
             <h1 class="font-semibold text-lg tracking-tight hidden sm:block">FokusFlow Pro</h1>
@@ -100,6 +99,9 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <button onclick="requestNotificationPermission()" id="btn-notif" class="w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-brand-500 dark:hover:bg-gray-700 transition flex items-center justify-center" title="Aktifkan Notifikasi">
+                <i class="fa-solid fa-bell"></i>
+            </button>
             <button onclick="toggleTheme()" class="w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-700 transition flex items-center justify-center">
                 <i class="fa-solid fa-moon dark:hidden"></i>
                 <i class="fa-solid fa-sun hidden dark:block"></i>
@@ -133,13 +135,15 @@
                     <h2 id="current-date" class="text-xl font-bold text-gray-900 dark:text-white">Hari Ini</h2>
                     <p class="text-xs text-gray-500 dark:text-gray-400" id="current-full-date">...</p>
                 </div>
-                <button onclick="clearSchedule()" class="text-xs font-medium text-gray-400 hover:text-red-500 transition px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">Reset</button>
+                <button onclick="finishDay()" class="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded hover:bg-brand-100 transition dark:bg-brand-900/30 dark:text-brand-400 dark:hover:bg-brand-900/50">
+                    <i class="fa-solid fa-box-archive mr-1"></i> Selesai Hari Ini
+                </button>
             </div>
             <div id="calendar-grid" class="flex-1 overflow-y-auto relative custom-scrollbar pb-24 md:pb-0 scroll-smooth">
                 <div id="time-slots-container" class="relative min-h-[1280px] pt-2"></div>
                 <div id="now-indicator" class="absolute left-0 right-0 flex items-center z-20 pointer-events-none" style="display:none; top: 0px;">
-                    <div class="w-full h-[1px] bg-brand-500 shadow-sm"></div>
-                    <div class="absolute left-0 bg-brand-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-r" id="now-time-label">00:00</div>
+                    <div class="w-full h-[1px] bg-red-500 shadow-sm"></div>
+                    <div class="absolute left-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-r" id="now-time-label">00:00</div>
                 </div>
             </div>
         </section>
@@ -147,16 +151,16 @@
         <!-- PANEL 3: DASHBOARD (Focus & Analytics) -->
         <aside id="view-focus" class="view-section md:w-80 bg-gray-50 md:border-l border-gray-200 flex-col md:flex shrink-0 z-20 w-full dark:bg-gray-900 dark:border-gray-700">
             
-            <!-- Desktop Tabs (Hidden on mobile usually, but we use them for structure) -->
+            <!-- Desktop Tabs -->
             <div class="flex border-b border-gray-200 dark:border-gray-700">
                 <button onclick="switchRightTab('tab-focus')" id="btn-tab-focus" class="flex-1 py-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 transition">Fokus</button>
                 <button onclick="switchRightTab('tab-analytics')" id="btn-tab-analytics" class="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent transition">Laporan</button>
             </div>
 
-            <!-- Content Container (Scrollable) -->
+            <!-- Content Container -->
             <div class="flex-1 overflow-y-auto scroll-container pb-24 md:pb-0">
                 
-                <!-- TAB 1: FOCUS / TIMER -->
+                <!-- TAB 1: FOCUS -->
                 <div id="tab-focus" class="min-h-full flex flex-col p-6 items-center justify-center animate-fade-in-up">
                     <div class="mb-8 text-center">
                         <div id="timer-display" class="text-6xl font-light text-gray-900 font-mono tracking-tighter dark:text-white transition-all duration-300">25:00</div>
@@ -166,17 +170,12 @@
                         <button onclick="startTimer()" id="btn-start" class="flex-1 bg-gray-900 hover:bg-black text-white py-3 rounded-lg text-sm font-medium transition dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 shadow-lg">Mulai</button>
                         <button onclick="resetTimer()" class="px-4 py-3 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-lg text-sm transition dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"><i class="fa-solid fa-rotate-right"></i></button>
                     </div>
-                    
-                    <!-- Quick Helper -->
-                    <div class="w-full bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700 shadow-sm text-center">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 italic">"Hindari multitasking. Fokus pada satu blok waktu."</p>
-                    </div>
                 </div>
 
-                <!-- TAB 2: ANALYTICS / LAPORAN -->
+                <!-- TAB 2: ANALYTICS / HISTORY -->
                 <div id="tab-analytics" class="hidden p-6 space-y-6 animate-fade-in-up">
                     
-                    <!-- Daily Achievement Card -->
+                    <!-- Daily Badge -->
                     <div class="bg-gradient-to-br from-brand-600 to-blue-700 rounded-xl p-5 text-white shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 opacity-10 transform translate-x-2 -translate-y-2">
                             <i class="fa-solid fa-trophy text-8xl"></i>
@@ -188,25 +187,20 @@
                         </div>
                     </div>
 
-                    <!-- Progress Stats -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                            <span class="block text-3xl font-bold text-green-500 mb-1" id="report-completed">0</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Tugas Selesai</span>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                            <span class="block text-3xl font-bold text-brand-500 mb-1" id="report-hours">0</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Jam Fokus</span>
-                        </div>
+                    <!-- Filter Dropdown -->
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Riwayat Aktivitas</h4>
+                        <select id="history-filter" onchange="renderHistory()" class="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 outline-none focus:border-brand-500">
+                            <option value="today">Hari Ini</option>
+                            <option value="7days">7 Hari Terakhir</option>
+                            <option value="30days">30 Hari Terakhir</option>
+                            <option value="all">Semua</option>
+                        </select>
                     </div>
 
-                    <!-- Completed List -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Log Penyelesaian</h4>
-                        <div id="completed-list" class="space-y-2">
-                            <!-- Injected via JS -->
-                            <div class="text-center py-4 text-xs text-gray-400">Belum ada tugas selesai hari ini.</div>
-                        </div>
+                    <!-- History List -->
+                    <div id="history-list" class="space-y-4">
+                        <!-- Injected via JS -->
                     </div>
                     
                 </div>
@@ -231,7 +225,7 @@
         </button>
     </nav>
 
-    <!-- SCHEDULE MODAL -->
+    <!-- MODALS & OVERLAYS -->
     <div id="schedule-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
         <div class="bg-white w-full md:max-w-sm rounded-t-xl md:rounded-lg shadow-xl overflow-hidden dark:bg-gray-800">
             <div class="p-4 border-b border-gray-100 flex justify-between items-center dark:border-gray-700">
@@ -245,7 +239,6 @@
         </div>
     </div>
 
-    <!-- ZEN MODE -->
     <div id="zen-overlay" class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center dark:bg-black">
         <div id="zen-task-title" class="text-3xl md:text-4xl font-semibold text-gray-900 mb-8 max-w-4xl text-center px-4 dark:text-white">...</div>
         <div id="zen-timer" class="text-8xl font-light font-mono text-gray-900 mb-12 dark:text-white">25:00</div>
@@ -254,10 +247,16 @@
 
     <script>
         const CONFIG = { startHour: 6, endHour: 23, categories: { 'deep': { color: 'border-blue-500', dot: 'bg-blue-500' }, 'meet': { color: 'border-amber-500', dot: 'bg-amber-500' }, 'admin': { color: 'border-purple-500', dot: 'bg-purple-500' } } };
-        const STATE = { tasks: [], theme: localStorage.getItem('theme') || 'system', activeCategory: 'deep', timer: { time: 25*60, id: null, running: false }, modalTaskId: null };
+        const STATE = { 
+            tasks: [], 
+            history: [], // For archived/completed tasks
+            theme: localStorage.getItem('theme') || 'system', 
+            activeCategory: 'deep', 
+            timer: { time: 25*60, id: null, running: false }, 
+            modalTaskId: null 
+        };
         const $ = (id) => document.getElementById(id);
 
-        // DATA: Daily Motivation Database
         const DAILY_QUOTES = [
             { badge: "The Initiator", text: "Perjalanan ribuan mil dimulai dengan satu langkah." },
             { badge: "Focus Master", text: "Apa yang Anda fokuskan akan berkembang." },
@@ -269,94 +268,196 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            initTheme();
+            // FIX: Panggil fungsi ini agar landing screen hilang!
             handleLandingScreen();
-            loadData(); renderCalendar(); renderTasks(); updateStats(); renderAnalytics();
+
+            initTheme();
+            loadData(); 
+            renderCalendar(); 
+            renderTasks(); 
+            renderHistory();
             
-            // Set Date Motivation
+            // Set Motivation
             const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
             const daily = DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
             $('daily-badge').innerText = daily.badge;
             $('daily-quote').innerText = `"${daily.text}"`;
 
-            const now = new Date();
-            $('current-full-date').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+            $('current-full-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
             
             const handleEnter = (e) => { if (e.key === 'Enter' && e.target.value.trim()) { addTask(e.target.value); e.target.value = ''; } };
             $('quick-add-desktop').addEventListener('keypress', handleEnter);
             $('quick-add-mobile').addEventListener('keypress', handleEnter);
             
-            setInterval(updateNowLine, 60000); setTimeout(scrollToNow, 300);
-            if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+            setInterval(updateNowLine, 60000); 
+            setInterval(checkReminders, 60000); // Check notifications every minute
+            setTimeout(scrollToNow, 300);
+            
+            // Register Service Worker (Safety Check)
+            if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+                navigator.serviceWorker.register('sw.js').catch(console.error);
+            }
         });
 
+        // --- LANDING SCREEN LOGIC ---
         function handleLandingScreen() {
             const landing = $('landing-screen');
-            setTimeout(() => { landing.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => { landing.remove(); }, 700); }, 2000);
+            if(!landing) return;
+            setTimeout(() => {
+                landing.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    landing.remove();
+                }, 700);
+            }, 2000);
         }
 
-        // --- TABS LOGIC (RIGHT PANEL) ---
-        function switchRightTab(tabId) {
-            // Hide all tabs
-            ['tab-focus', 'tab-analytics'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            // Show target
-            document.getElementById(tabId).classList.remove('hidden');
-            
-            // Update Buttons State
-            const btnFocus = $('btn-tab-focus');
-            const btnAnalytics = $('btn-tab-analytics');
-            
-            if(tabId === 'tab-focus') {
-                btnFocus.classList.add('text-brand-600', 'border-brand-600');
-                btnFocus.classList.remove('text-gray-500', 'border-transparent');
-                btnAnalytics.classList.remove('text-brand-600', 'border-brand-600');
-                btnAnalytics.classList.add('text-gray-500', 'border-transparent');
+        // --- NOTIFICATIONS ---
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("Browser ini tidak mendukung notifikasi desktop.");
             } else {
-                btnAnalytics.classList.add('text-brand-600', 'border-brand-600');
-                btnAnalytics.classList.remove('text-gray-500', 'border-transparent');
-                btnFocus.classList.remove('text-brand-600', 'border-brand-600');
-                btnFocus.classList.add('text-gray-500', 'border-transparent');
-                renderAnalytics(); // Refresh data when opening tab
-            }
-        }
-
-        // --- ANALYTICS RENDER ---
-        function renderAnalytics() {
-            const completedList = $('completed-list');
-            const completedTasks = STATE.tasks.filter(t => t.completed);
-            
-            // Update Stats
-            $('report-completed').innerText = completedTasks.length;
-            const scheduled = STATE.tasks.filter(t => t.hour !== null);
-            $('report-hours').innerText = scheduled.length;
-
-            // Render List
-            if(completedTasks.length === 0) {
-                completedList.innerHTML = `<div class="text-center py-6 border border-dashed border-gray-200 rounded-lg dark:border-gray-700"><p class="text-xs text-gray-400">Belum ada tugas selesai hari ini.</p></div>`;
-            } else {
-                completedList.innerHTML = '';
-                completedTasks.reverse().forEach(task => { // Show newest first
-                    const div = document.createElement('div');
-                    div.className = "flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm";
-                    div.innerHTML = `
-                        <div class="w-2 h-2 rounded-full ${CONFIG.categories[task.category].dot}"></div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-300 line-through truncate">${task.title}</p>
-                        </div>
-                        <i class="fa-solid fa-check text-green-500 text-xs"></i>
-                    `;
-                    completedList.appendChild(div);
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("Notifikasi Aktif", { body: "FokusFlow akan mengingatkan jadwal Anda.", icon: "https://cdn-icons-png.flaticon.com/512/3209/3209265.png" });
+                        $('btn-notif').classList.add('text-brand-500');
+                    }
                 });
             }
         }
 
+        function checkReminders() {
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            if (m <= 1) {
+                const task = STATE.tasks.find(t => t.hour === h && !t.completed);
+                if (task && Notification.permission === "granted") {
+                    new Notification(`Waktunya: ${task.title}`, {
+                        body: `Saatnya untuk fokus pada tugas ini sekarang!`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/3209/3209265.png"
+                    });
+                }
+            }
+        }
+
+        // --- TABS & NAV LOGIC ---
+        function switchRightTab(tabId) {
+            ['tab-focus', 'tab-analytics'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            const btnFocus = $('btn-tab-focus');
+            const btnAnalytics = $('btn-tab-analytics');
+            
+            if(tabId === 'tab-focus') {
+                btnFocus.className = "flex-1 py-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 transition";
+                btnAnalytics.className = "flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent transition";
+            } else {
+                btnAnalytics.className = "flex-1 py-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 transition";
+                btnFocus.className = "flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent transition";
+                renderHistory();
+            }
+        }
+
+        function switchMobileView(viewId, subTabId = null) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            $(viewId).classList.add('active');
+            
+            if (viewId === 'view-focus' && subTabId) switchRightTab(subTabId);
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const targetView = btn.dataset.target === viewId;
+                let isActive = false;
+                if (btn.dataset.target === 'view-inbox' && viewId === 'view-inbox') isActive = true;
+                if (btn.dataset.target === 'view-calendar' && viewId === 'view-calendar') isActive = true;
+                if (btn.dataset.target === 'view-focus' && viewId === 'view-focus' && subTabId === 'tab-focus') isActive = true;
+                if (btn.dataset.target === 'view-analytics' && viewId === 'view-focus' && subTabId === 'tab-analytics') isActive = true;
+
+                if(isActive) {
+                    btn.classList.add('text-brand-600', 'active');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('text-brand-600', 'active');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+        }
+
+        // --- HISTORY & REPORTING ---
+        function renderHistory() {
+            const list = $('history-list');
+            const filter = $('history-filter').value;
+            list.innerHTML = '';
+            let allCompleted = [...STATE.history, ...STATE.tasks.filter(t => t.completed)];
+            allCompleted = Array.from(new Map(allCompleted.map(item => [item.id, item])).values());
+            allCompleted = allCompleted.map(t => ({ ...t, dateObj: t.completedAt ? new Date(t.completedAt) : new Date() }));
+
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            let filtered = allCompleted;
+
+            if (filter === 'today') {
+                filtered = allCompleted.filter(t => t.dateObj >= startOfDay);
+            } else if (filter === '7days') {
+                const last7 = new Date(startOfDay); last7.setDate(last7.getDate() - 7);
+                filtered = allCompleted.filter(t => t.dateObj >= last7);
+            } else if (filter === '30days') {
+                const last30 = new Date(startOfDay); last30.setDate(last30.getDate() - 30);
+                filtered = allCompleted.filter(t => t.dateObj >= last30);
+            }
+
+            filtered.sort((a, b) => b.dateObj - a.dateObj);
+            const grouped = {};
+            filtered.forEach(t => {
+                const dateKey = t.dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
+                if (!grouped[dateKey]) grouped[dateKey] = [];
+                grouped[dateKey].push(t);
+            });
+
+            if (Object.keys(grouped).length === 0) {
+                list.innerHTML = `<div class="text-center py-8 text-xs text-gray-400">Tidak ada riwayat aktivitas untuk periode ini.</div>`;
+                return;
+            }
+
+            for (const [date, tasks] of Object.entries(grouped)) {
+                const groupDiv = document.createElement('div');
+                groupDiv.innerHTML = `<h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4 sticky top-0 bg-gray-50 dark:bg-gray-900 py-1">${date}</h5>`;
+                tasks.forEach(task => {
+                    const timeStr = task.dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    const taskEl = document.createElement('div');
+                    taskEl.className = "flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm mb-2";
+                    taskEl.innerHTML = `<div class="w-2 h-2 rounded-full ${CONFIG.categories[task.category].dot}"></div><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-600 dark:text-gray-300 line-through truncate">${task.title}</p><p class="text-[10px] text-gray-400">Selesai jam ${timeStr}</p></div><i class="fa-solid fa-check text-green-500 text-xs"></i>`;
+                    groupDiv.appendChild(taskEl);
+                });
+                list.appendChild(groupDiv);
+            }
+        }
+
+        function finishDay() {
+            if(confirm("Selesaikan hari ini? Tugas yang selesai akan diarsipkan ke Laporan, jadwal akan direset.")) {
+                const completed = STATE.tasks.filter(t => t.completed);
+                STATE.history.push(...completed);
+                STATE.tasks = STATE.tasks.filter(t => !t.completed);
+                STATE.tasks.forEach(t => t.hour = null);
+                saveData(); renderTasks(); renderHistory();
+            }
+        }
+
+        // --- CORE FUNCTIONS ---
         function initTheme() { if (STATE.theme === 'dark' || (STATE.theme === 'system' && window.matchMedia('(prefers_color_scheme: dark)').matches)) { document.documentElement.classList.add('dark'); } else { document.documentElement.classList.remove('dark'); } }
         function toggleTheme() { const html = document.documentElement; if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.setItem('theme', 'light'); } else { html.classList.add('dark'); localStorage.setItem('theme', 'dark'); } }
         function setCategory(cat) { STATE.activeCategory = cat; ['deep', 'meet'].forEach(c => { const btn = $(`btn-cat-${c}`); if (c === cat) btn.classList.add('text-brand-600', 'bg-gray-100'); else btn.classList.remove('text-brand-600', 'bg-gray-100'); }); }
         
-        function addTask(title) { STATE.tasks.push({ id: crypto.randomUUID(), title, category: STATE.activeCategory, hour: null, completed: false }); saveData(); renderTasks(); renderAnalytics(); }
-        function toggleComplete(id) { const t = STATE.tasks.find(x => x.id === id); if(t) { t.completed = !t.completed; saveData(); renderTasks(); updateStats(); renderAnalytics(); } }
-        function deleteTask(id) { if(confirm("Hapus?")) { STATE.tasks = STATE.tasks.filter(t => t.id !== id); saveData(); renderTasks(); renderAnalytics(); } }
+        function addTask(title) { 
+            STATE.tasks.push({ id: crypto.randomUUID(), title, category: STATE.activeCategory, hour: null, completed: false, createdAt: new Date().toISOString() }); 
+            saveData(); renderTasks(); 
+        }
+        
+        function toggleComplete(id) { 
+            const t = STATE.tasks.find(x => x.id === id); 
+            if(t) { t.completed = !t.completed; t.completedAt = t.completed ? new Date().toISOString() : null; saveData(); renderTasks(); renderHistory(); } 
+        }
+        
+        function deleteTask(id) { if(confirm("Hapus?")) { STATE.tasks = STATE.tasks.filter(t => t.id !== id); saveData(); renderTasks(); renderHistory(); } }
         
         function renderCalendar() {
             const container = $('time-slots-container'); container.innerHTML = '';
@@ -395,7 +496,7 @@
             if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
             if(window.innerWidth < 768 || STATE.tasks.find(t=>t.id===id).hour !== null) openScheduleModal(id);
         }
-        function scheduleTask(id, hour) { const t = STATE.tasks.find(x => x.id === id); if(t) { t.hour = hour; saveData(); renderTasks(); renderAnalytics(); } }
+        function scheduleTask(id, hour) { const t = STATE.tasks.find(x => x.id === id); if(t) { t.hour = hour; saveData(); renderTasks(); renderHistory(); } }
         function openScheduleModal(id) {
             STATE.modalTaskId = id; const grid = $('modal-time-grid'); grid.innerHTML = '';
             for(let i=CONFIG.startHour; i<=CONFIG.endHour; i++) {
@@ -408,39 +509,6 @@
         function closeScheduleModal() { $('schedule-modal').classList.add('hidden'); }
         function moveTaskToInbox() { if(STATE.modalTaskId) { scheduleTask(STATE.modalTaskId, null); closeScheduleModal(); } }
         
-        // --- MOBILE NAV SWITCHER ---
-        function switchMobileView(viewId, subTabId = null) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            $(viewId).classList.add('active');
-            
-            // If viewing Focus panel, handle sub-tabs (Focus vs Analytics)
-            if (viewId === 'view-focus' && subTabId) {
-                switchRightTab(subTabId);
-            }
-
-            // Update Nav Icons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                // Logic: if btn targets the view AND (subtab matches OR subtab is null)
-                const targetView = btn.dataset.target === viewId;
-                const targetSubTab = btn.dataset.target === subTabId; // Mobile uses dataset.target for both
-                
-                // Hacky check for mobile 4-button layout mapping
-                let isActive = false;
-                if (btn.dataset.target === 'view-inbox' && viewId === 'view-inbox') isActive = true;
-                if (btn.dataset.target === 'view-calendar' && viewId === 'view-calendar') isActive = true;
-                if (btn.dataset.target === 'view-focus' && viewId === 'view-focus' && subTabId === 'tab-focus') isActive = true;
-                if (btn.dataset.target === 'view-analytics' && viewId === 'view-focus' && subTabId === 'tab-analytics') isActive = true;
-
-                if(isActive) {
-                    btn.classList.add('text-brand-600', 'active');
-                    btn.classList.remove('text-gray-400');
-                } else {
-                    btn.classList.remove('text-brand-600', 'active');
-                    btn.classList.add('text-gray-400');
-                }
-            });
-        }
-
         function startTimer() { if(STATE.timer.running) { clearInterval(STATE.timer.id); STATE.timer.running = false; $('btn-start').innerText = "Lanjut"; } else { STATE.timer.running = true; $('btn-start').innerText = "Jeda"; STATE.timer.id = setInterval(() => { STATE.timer.time--; if(STATE.timer.time <= 0) resetTimer(); updateTimerDisplay(); }, 1000); } }
         function resetTimer() { clearInterval(STATE.timer.id); STATE.timer.running = false; STATE.timer.time = 25*60; $('btn-start').innerText = "Mulai"; updateTimerDisplay(); }
         function updateTimerDisplay() { const m = Math.floor(STATE.timer.time / 60).toString().padStart(2,'0'); const s = (STATE.timer.time % 60).toString().padStart(2,'0'); $('timer-display').innerText = `${m}:${s}`; $('zen-timer').innerText = `${m}:${s}`; document.title = `${m}:${s} - Fokus`; }
@@ -453,12 +521,17 @@
             if(h >= CONFIG.startHour && h <= CONFIG.endHour) { $('now-indicator').style.display = 'flex'; const top = ((h - CONFIG.startHour) * 80) + (now.getMinutes() * (80/60)); $('now-indicator').style.top = `${top}px`; $('now-time-label').innerText = `${h}:${now.getMinutes().toString().padStart(2,'0')}`; } else { $('now-indicator').style.display = 'none'; }
         }
         function scrollToNow() { const h = new Date().getHours(); if(h > CONFIG.startHour) { $('calendar-grid').scrollTop = ((h - CONFIG.startHour) * 80) - 100; } }
-        function updateStats() { const scheduled = STATE.tasks.filter(t => t.hour !== null); /* Only visual updates in report now */ }
-        function clearSchedule() { if(confirm("Bersihkan jadwal hari ini?")) { STATE.tasks.forEach(t => t.hour = null); saveData(); renderTasks(); renderAnalytics(); } }
+        function clearSchedule() { if(confirm("Bersihkan jadwal hari ini? (Hanya memindahkan ke inbox)")) { STATE.tasks.forEach(t => t.hour = null); saveData(); renderTasks(); } }
         function allowDrop(e) { e.preventDefault(); }
         function dropBackToInbox(e) { e.preventDefault(); scheduleTask(e.dataTransfer.getData('text'), null); }
-        function saveData() { localStorage.setItem('fokusPro', JSON.stringify(STATE.tasks)); }
-        function loadData() { const d = localStorage.getItem('fokusPro'); if(d) STATE.tasks = JSON.parse(d); }
+        function saveData() { 
+            localStorage.setItem('fokusPro', JSON.stringify(STATE.tasks)); 
+            localStorage.setItem('fokusHistory', JSON.stringify(STATE.history));
+        }
+        function loadData() { 
+            const d = localStorage.getItem('fokusPro'); if(d) STATE.tasks = JSON.parse(d); 
+            const h = localStorage.getItem('fokusHistory'); if(h) STATE.history = JSON.parse(h);
+        }
     </script>
 </body>
 </html>
