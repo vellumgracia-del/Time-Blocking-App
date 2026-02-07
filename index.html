@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FokusFlow - Deep Work OS</title>
+    <meta name="description" content="Aplikasi Time Blocking untuk Deep Work dan Produktivitas.">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111827">
+    
+    <!-- Tailwind CSS (via CDN for simplicity) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        dark: {
+                            900: '#111827', // Latar belakang utama
+                            800: '#1F2937', // Panel
+                            700: '#374151', // Border
+                        },
+                        brand: {
+                            purple: '#6366f1', // Indigo untuk Deep Work
+                            sage: '#10b981',   // Hijau untuk Meeting/Shallow
+                            accent: '#f43f5e'  // Rose untuk Fokus/Timer
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for Dark Mode */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1F2937; }
+        ::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+        
+        /* Drag and Drop Visuals */
+        .dragging { opacity: 0.5; border: 2px dashed #6366f1; }
+        .drop-zone-hover { background-color: rgba(99, 102, 241, 0.1); }
+        
+        /* Time Grid Lines */
+        .time-slot { height: 60px; border-bottom: 1px solid #374151; position: relative; }
+        .time-slot:hover { background-color: rgba(255,255,255,0.02); }
+        .time-label { position: absolute; top: -10px; left: 8px; font-size: 0.75rem; color: #9CA3AF; background: #111827; padding-right: 4px; z-index: 10; }
+        
+        /* Current Time Line */
+        #current-time-line { position: absolute; left: 0; right: 0; height: 2px; background-color: #f43f5e; z-index: 20; pointer-events: none; }
+        #current-time-dot { position: absolute; left: -6px; top: -4px; width: 10px; height: 10px; background-color: #f43f5e; border-radius: 50%; }
+
+        body { overscroll-behavior-y: none; } /* Mencegah pull-to-refresh di mobile */
+    </style>
+</head>
+<body class="bg-dark-900 text-gray-200 font-sans h-screen flex flex-col overflow-hidden selection:bg-brand-purple selection:text-white">
+
+    <!-- HEADER / COMMAND BAR -->
+    <header class="h-14 bg-dark-800 border-b border-dark-700 flex items-center justify-between px-4 shrink-0 z-30">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-layer-group text-brand-purple text-xl"></i>
+            <h1 class="font-bold text-lg tracking-tight hidden md:block">FokusFlow</h1>
+        </div>
+        
+        <!-- Quick Add Input -->
+        <div class="flex-1 max-w-xl mx-4 relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-plus text-gray-500"></i>
+            </div>
+            <input type="text" id="quick-add" 
+                class="w-full bg-dark-900 border border-dark-700 rounded-lg py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all placeholder-gray-500"
+                placeholder="Tambah tugas (Tekan Enter)...">
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="text-xs text-gray-400 bg-dark-900 px-3 py-1 rounded-full border border-dark-700">
+                <i class="fa-solid fa-fire text-orange-500 mr-1"></i> <span id="streak-count">0</span> Hari
+            </div>
+            <button onclick="toggleZenMode()" class="p-2 hover:bg-dark-700 rounded-md text-gray-400 hover:text-white transition" title="Mode Fokus Zen">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN LAYOUT (3 PANES) -->
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- PANEL 1: INBOX (Left) -->
+        <aside id="panel-inbox" class="w-72 bg-dark-800 border-r border-dark-700 flex flex-col shrink-0 transition-all duration-300">
+            <div class="p-4 border-b border-dark-700 flex justify-between items-center">
+                <h2 class="font-semibold text-gray-300 text-sm uppercase tracking-wider">Inbox</h2>
+                <span id="inbox-count" class="bg-dark-700 text-xs px-2 py-0.5 rounded-full text-gray-400">0</span>
+            </div>
+            
+            <div id="inbox-list" class="flex-1 overflow-y-auto p-3 space-y-2" ondragover="allowDrop(event)" ondrop="dropBackToInbox(event)">
+                <!-- Tasks will be injected here -->
+                <div class="text-center mt-10 text-gray-600 text-sm italic">Inbox kosong.<br>Nikmati ketenangan.</div>
+            </div>
+        </aside>
+
+        <!-- PANEL 2: EXECUTION CANVAS (Center - Time Grid) -->
+        <section class="flex-1 bg-dark-900 relative flex flex-col overflow-hidden">
+            <!-- Header Hari -->
+            <div class="p-4 border-b border-dark-700 flex justify-between items-center bg-dark-900 z-20">
+                <div>
+                    <h2 id="current-date" class="text-xl font-bold text-white">Hari Ini</h2>
+                    <p class="text-xs text-gray-500">Time Blocking</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="clearSchedule()" class="text-xs text-red-400 hover:text-red-300 px-3 py-1 hover:bg-dark-800 rounded">Reset Hari</button>
+                </div>
+            </div>
+
+            <!-- The Grid -->
+            <div id="calendar-grid" class="flex-1 overflow-y-auto relative custom-scrollbar pb-20">
+                <div class="absolute top-0 left-0 right-0 bottom-0 pointer-events-none grid-bg"></div>
+                <!-- Time Slots 06:00 to 22:00 -->
+                <div id="time-slots-container" class="relative min-h-[1020px]"> 
+                    <!-- Generated via JS -->
+                </div>
+                <!-- Current Time Indicator -->
+                <div id="now-indicator" class="absolute w-full flex items-center z-20" style="display:none; top: 0px;">
+                    <div class="w-2 h-2 rounded-full bg-red-500 -ml-1"></div>
+                    <div class="h-[2px] bg-red-500 flex-1 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANEL 3: CONTEXT & WIDGETS (Right) -->
+        <aside id="panel-context" class="w-80 bg-dark-800 border-l border-dark-700 flex flex-col shrink-0 transition-all duration-300 hidden md:flex">
+            
+            <!-- Focus Timer Widget -->
+            <div class="p-6 border-b border-dark-700 bg-gradient-to-br from-dark-800 to-dark-900">
+                <h3 class="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Mode Fokus</h3>
+                <div class="text-center">
+                    <div id="timer-display" class="text-5xl font-mono font-bold text-white mb-4 tracking-tighter">25:00</div>
+                    <div class="flex justify-center gap-3">
+                        <button onclick="startTimer()" id="btn-start" class="bg-brand-purple hover:bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium shadow-lg shadow-indigo-500/20 transition-all transform active:scale-95">
+                            Mulai
+                        </button>
+                        <button onclick="resetTimer()" class="bg-dark-700 hover:bg-dark-600 text-gray-300 px-4 py-2 rounded-lg transition-all">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats / Gamification -->
+            <div class="p-4 flex-1 overflow-y-auto">
+                <h3 class="text-xs font-semibold text-gray-500 mb-3 uppercase">Statistik Hari Ini</h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-dark-700 p-3 rounded-lg border border-dark-600">
+                        <div class="text-2xl font-bold text-brand-sage" id="stat-completed">0</div>
+                        <div class="text-xs text-gray-400">Tugas Selesai</div>
+                    </div>
+                    <div class="bg-dark-700 p-3 rounded-lg border border-dark-600">
+                        <div class="text-2xl font-bold text-brand-purple" id="stat-hours">0h</div>
+                        <div class="text-xs text-gray-400">Deep Work</div>
+                    </div>
+                </div>
+
+                <h3 class="text-xs font-semibold text-gray-500 mb-3 uppercase">Musik Fokus</h3>
+                <div class="space-y-2">
+                    <button class="w-full text-left px-3 py-2 bg-dark-700 rounded hover:bg-dark-600 flex items-center gap-3 transition" onclick="alert('Fitur suara akan segera hadir!')">
+                        <i class="fa-solid fa-cloud-rain text-blue-400"></i> Hujan & Petir
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-dark-700 rounded hover:bg-dark-600 flex items-center gap-3 transition" onclick="alert('Fitur suara akan segera hadir!')">
+                        <i class="fa-solid fa-coffee text-amber-600"></i> Suasana Cafe
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- ZEN MODE OVERLAY -->
+    <div id="zen-overlay" class="fixed inset-0 bg-dark-900 z-50 hidden flex flex-col items-center justify-center text-center p-10">
+        <h2 class="text-3xl font-bold text-gray-400 mb-2">Fokus Mendalam</h2>
+        <div id="zen-task-title" class="text-5xl font-bold text-white mb-10 max-w-4xl leading-tight">Pilih tugas untuk memulai</div>
+        <div id="zen-timer" class="text-8xl font-mono text-brand-purple font-bold mb-10">25:00</div>
+        <button onclick="toggleZenMode()" class="px-8 py-3 rounded-full border border-gray-600 text-gray-400 hover:text-white hover:border-white transition uppercase tracking-widest text-sm">
+            Keluar Mode Zen
+        </button>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- STATE MANAGEMENT ---
+        const APP_STATE = {
+            tasks: [], // { id, title, duration, scheduledTime (hour integer), type: 'deep'|'shallow', completed }
+            timer: {
+                timeLeft: 25 * 60,
+                isRunning: false,
+                intervalId: null
+            },
+            settings: {
+                startHour: 6, // 06:00
+                endHour: 22   // 22:00
+            }
+        };
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            inboxList: document.getElementById('inbox-list'),
+            timeSlotsContainer: document.getElementById('time-slots-container'),
+            quickAdd: document.getElementById('quick-add'),
+            timerDisplay: document.getElementById('timer-display'),
+            zenTimer: document.getElementById('zen-timer'),
+            zenOverlay: document.getElementById('zen-overlay'),
+            streakCount: document.getElementById('streak-count'),
+            statCompleted: document.getElementById('stat-completed'),
+            statHours: document.getElementById('stat-hours'),
+            inboxCount: document.getElementById('inbox-count'),
+            currentDate: document.getElementById('current-date')
+        };
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderCalendarGrid();
+            renderTasks();
+            updateStats();
+            updateNowIndicator();
+            setupDragAndDrop(); // Global setup
+            
+            // Set Date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            els.currentDate.innerText = new Date().toLocaleDateString('id-ID', options);
+
+            // Setup Quick Add
+            els.quickAdd.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.target.value.trim() !== "") {
+                    addTask(e.target.value);
+                    e.target.value = "";
+                }
+            });
+
+            // Update "Now" line every minute
+            setInterval(updateNowIndicator, 60000);
+            
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js');
+            }
+        });
+
+        // --- CORE LOGIC: TASKS ---
+        function addTask(title) {
+            const newTask = {
+                id: crypto.randomUUID(),
+                title: title,
+                duration: 60, // Default 1 hour
+                scheduledHour: null, // null means in inbox
+                type: 'deep',
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            APP_STATE.tasks.push(newTask);
+            saveData();
+            renderTasks();
+        }
+
+        function toggleTaskComplete(id) {
+            const task = APP_STATE.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveData();
+                renderTasks();
+                updateStats();
+            }
+        }
+
+        function deleteTask(id) {
+            APP_STATE.tasks = APP_STATE.tasks.filter(t => t.id !== id);
+            saveData();
+            renderTasks();
+        }
+
+        // --- RENDERING ---
+        function renderCalendarGrid() {
+            els.timeSlotsContainer.innerHTML = '';
+            
+            // Create slots from StartHour to EndHour
+            for (let i = APP_STATE.settings.startHour; i <= APP_STATE.settings.endHour; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot group border-b border-dark-700 h-[60px] relative';
+                slot.dataset.hour = i;
+                
+                // Allow Drop
+                slot.ondragover = allowDrop;
+                slot.ondrop = (e) => dropOnCalendar(e, i);
+
+                // Time Label
+                const label = document.createElement('div');
+                label.className = 'time-label group-hover:text-white transition-colors';
+                label.innerText = `${i.toString().padStart(2, '0')}:00`;
+                slot.appendChild(label);
+
+                els.timeSlotsContainer.appendChild(slot);
+            }
+        }
+
+        function renderTasks() {
+            // Clear existing
+            els.inboxList.innerHTML = '';
+            document.querySelectorAll('.task-block').forEach(el => el.remove());
+
+            let inboxCount = 0;
+
+            APP_STATE.tasks.forEach(task => {
+                if (task.scheduledHour === null) {
+                    // Render in Inbox
+                    inboxCount++;
+                    const el = createTaskElement(task, false);
+                    els.inboxList.appendChild(el);
+                } else {
+                    // Render in Calendar
+                    const slot = document.querySelector(`.time-slot[data-hour="${task.scheduledHour}"]`);
+                    if (slot) {
+                        const el = createTaskElement(task, true);
+                        slot.appendChild(el);
+                    } else {
+                        // If hour is out of bounds (e.g. settings changed), move back to inbox
+                        task.scheduledHour = null;
+                        renderTasks(); // Recursion safety? minimal risk here.
+                        return;
+                    }
+                }
+            });
+
+            els.inboxCount.innerText = inboxCount;
+            if (inboxCount === 0 && APP_STATE.tasks.length > 0) {
+                 els.inboxList.innerHTML = '<div class="text-center mt-10 text-gray-600 text-sm italic">Inbox kosong.<br>Semua terjadwal!</div>';
+            }
+        }
+
+        function createTaskElement(task, isScheduled) {
+            const el = document.createElement('div');
+            el.draggable = true;
+            el.id = task.id;
+            
+            // Base classes
+            let classes = "task-block cursor-grab active:cursor-grabbing rounded-md p-2 shadow-sm border border-l-4 text-sm flex justify-between items-start transition-all duration-200 group ";
+            
+            // Styles based on state
+            if (task.completed) {
+                classes += "bg-dark-800 border-gray-600 text-gray-500 opacity-70 line-through decoration-gray-500 ";
+            } else if (task.type === 'deep') {
+                classes += "bg-indigo-900/30 border-brand-purple text-indigo-100 hover:bg-indigo-900/50 ";
+            } else {
+                classes += "bg-emerald-900/30 border-brand-sage text-emerald-100 hover:bg-emerald-900/50 ";
+            }
+
+            // Dimensions for scheduled tasks
+            if (isScheduled) {
+                el.style.height = '58px'; // Slightly less than 60px to show gap
+                el.style.position = 'absolute';
+                el.style.top = '1px';
+                el.style.left = '60px';
+                el.style.right = '10px';
+                el.style.zIndex = '10';
+            } else {
+                classes += "mb-2 relative "; // Inbox spacing
+            }
+
+            el.className = classes;
+
+            // Inner HTML
+            el.innerHTML = `
+                <div class="flex items-start gap-2 overflow-hidden">
+                    <button onclick="toggleTaskComplete('${task.id}')" class="mt-0.5 text-gray-400 hover:text-white transition">
+                        <i class="fa-${task.completed ? 'solid fa-check-square' : 'regular fa-square'}"></i>
+                    </button>
+                    <span class="truncate font-medium">${task.title}</span>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-dark-900/80 rounded px-1">
+                     ${isScheduled ? `<button onclick="unscheduleTask('${task.id}')" title="Kembali ke Inbox" class="text-xs text-gray-400 hover:text-white"><i class="fa-solid fa-inbox"></i></button>` : ''}
+                    <button onclick="deleteTask('${task.id}')" class="text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+
+            // Drag Events
+            el.ondragstart = (e) => {
+                e.dataTransfer.setData("text/plain", task.id);
+                e.dataTransfer.effectAllowed = "move";
+                setTimeout(() => el.classList.add('hidden'), 0); // Hide original while dragging
+            };
+            
+            el.ondragend = (e) => {
+                el.classList.remove('hidden');
+            };
+
+            return el;
+        }
+
+        // --- DRAG AND DROP LOGIC ---
+        function allowDrop(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+        }
+
+        function dropOnCalendar(e, hour) {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData("text/plain");
+            const task = APP_STATE.tasks.find(t => t.id === taskId);
+            
+            if (task) {
+                task.scheduledHour = parseInt(hour);
+                saveData();
+                renderTasks();
+                
+                // Feedback Haptic (jika di mobile)
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        }
+
+        function dropBackToInbox(e) {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData("text/plain");
+            unscheduleTask(taskId);
+        }
+
+        function unscheduleTask(id) {
+            const task = APP_STATE.tasks.find(t => t.id === id);
+            if (task) {
+                task.scheduledHour = null;
+                saveData();
+                renderTasks();
+            }
+        }
+
+        function clearSchedule() {
+            if(confirm("Pindahkan semua tugas hari ini kembali ke Inbox?")) {
+                APP_STATE.tasks.forEach(t => t.scheduledHour = null);
+                saveData();
+                renderTasks();
+            }
+        }
+
+        // --- TIMER & ZEN MODE ---
+        function startTimer() {
+            if (APP_STATE.timer.isRunning) {
+                clearInterval(APP_STATE.timer.intervalId);
+                APP_STATE.timer.isRunning = false;
+                document.getElementById('btn-start').innerText = "Mulai";
+                document.getElementById('btn-start').classList.remove('bg-red-500');
+                document.getElementById('btn-start').classList.add('bg-brand-purple');
+            } else {
+                APP_STATE.timer.isRunning = true;
+                document.getElementById('btn-start').innerText = "Jeda";
+                document.getElementById('btn-start').classList.remove('bg-brand-purple');
+                document.getElementById('btn-start').classList.add('bg-red-500'); // Stop color
+                
+                APP_STATE.timer.intervalId = setInterval(() => {
+                    if (APP_STATE.timer.timeLeft > 0) {
+                        APP_STATE.timer.timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        // Timer selesai
+                        clearInterval(APP_STATE.timer.intervalId);
+                        APP_STATE.timer.isRunning = false;
+                        alert("Sesi Deep Work Selesai! Istirahatlah.");
+                        resetTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(APP_STATE.timer.intervalId);
+            APP_STATE.timer.isRunning = false;
+            APP_STATE.timer.timeLeft = 25 * 60;
+            document.getElementById('btn-start').innerText = "Mulai";
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(APP_STATE.timer.timeLeft / 60);
+            const seconds = APP_STATE.timer.timeLeft % 60;
+            const text = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            els.timerDisplay.innerText = text;
+            els.zenTimer.innerText = text;
+            document.title = `${text} - FokusFlow`;
+        }
+
+        function toggleZenMode() {
+            const overlay = els.zenOverlay;
+            const isHidden = overlay.classList.contains('hidden');
+            
+            if (isHidden) {
+                overlay.classList.remove('hidden');
+                // Set current task title in Zen mode if possible
+                const currentHour = new Date().getHours();
+                const currentTask = APP_STATE.tasks.find(t => t.scheduledHour === currentHour && !t.completed);
+                if (currentTask) {
+                    document.getElementById('zen-task-title').innerText = currentTask.title;
+                } else {
+                    document.getElementById('zen-task-title').innerText = "Tidak ada tugas terjadwal sekarang.";
+                }
+                
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            } else {
+                overlay.classList.add('hidden');
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // --- UTILS ---
+        function updateNowIndicator() {
+            const now = new Date();
+            const startHour = APP_STATE.settings.startHour;
+            const endHour = APP_STATE.settings.endHour;
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+
+            const indicator = document.getElementById('now-indicator');
+
+            if (currentHour >= startHour && currentHour <= endHour) {
+                indicator.style.display = 'flex';
+                // Calculate pixels from top
+                // (CurrentHour - StartHour) * 60px + Minutes
+                const topPos = ((currentHour - startHour) * 60) + currentMin;
+                indicator.style.top = `${topPos}px`;
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function updateStats() {
+            const todayTasks = APP_STATE.tasks.filter(t => t.scheduledHour !== null);
+            const completed = todayTasks.filter(t => t.completed).length;
+            const hoursPlanned = todayTasks.length; // Asumsi 1 blok = 1 jam
+
+            els.statCompleted.innerText = completed;
+            els.statHours.innerText = `${hoursPlanned}j`;
+            
+            // Simpel Streak Logic
+            const lastLogin = localStorage.getItem('lastLoginDate');
+            const today = new Date().toDateString();
+            let streak = parseInt(localStorage.getItem('streak') || 0);
+
+            if (lastLogin !== today) {
+                // If yesterday was last login, increment. Else reset.
+                // (Simplified for demo: Just increment if distinct day)
+                streak++;
+                localStorage.setItem('streak', streak);
+                localStorage.setItem('lastLoginDate', today);
+            }
+            els.streakCount.innerText = streak;
+        }
+
+        function saveData() {
+            localStorage.setItem('fokusFlowData', JSON.stringify(APP_STATE.tasks));
+        }
+
+        function loadData() {
+            const data = localStorage.getItem('fokusFlowData');
+            if (data) {
+                APP_STATE.tasks = JSON.parse(data);
+            }
+        }
+
+        // Setup Drag Drop global
+        function setupDragAndDrop() {
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                document.body.addEventListener(eventName, preventDefaults, false)
+            });
+        }
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    </script>
+</body>
+</html>
