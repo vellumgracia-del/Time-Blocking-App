@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FokusFlow Pro</title>
-    <meta name="description" content="Aplikasi Time Blocking Profesional.">
+    <title>Your Timer</title>
+    <meta name="description" content="Aplikasi Manajemen Waktu dan Fokus.">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
     
-    <!-- FAVICON (LOGO 3D BARU) -->
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8649/8649607.png">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8649/8649607.png">
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3176/3176373.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3176/3176373.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -26,27 +26,22 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        brand: { 500: '#2563eb', 600: '#1d4ed8' },
-                        deep: '#3b82f6', meet: '#f59e0b', admin: '#8b5cf6',
+                        brand: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }, // Biru Modern
+                        deep: '#6366f1', meet: '#f59e0b', admin: '#ec4899',
                     },
-                    boxShadow: { 'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)' },
+                    boxShadow: { 
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
+                        'neon': '0 0 20px rgba(59, 130, 246, 0.5)'
+                    },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
-                        'float': 'float 3s ease-in-out infinite',
-                        'pulse-soft': 'pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'fade-up': 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
-                        fadeInUp: {
+                        fadeUp: {
                             '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        pulseSoft: {
-                            '0%, 100%': { opacity: '1' },
-                            '50%': { opacity: '0.8' },
                         }
                     }
                 }
@@ -54,80 +49,112 @@
         }
     </script>
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background-color: #334155; }
+        
         .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
         body { overscroll-behavior-y: none; }
+        
+        /* View Transitions */
         .view-section { display: none; height: 100%; flex-direction: column; }
-        .view-section.active { display: flex; animation: fadeIn 0.15s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .bg-grid {
-            background-size: 40px 40px;
-            background-image: linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
-        }
-        .dark .bg-grid {
-            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-        }
+        .view-section.active { display: flex; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+        
+        .bg-grid { background-image: radial-gradient(#e2e8f0 1px, transparent 1px); background-size: 20px 20px; }
+        .dark .bg-grid { background-image: radial-gradient(#374151 1px, transparent 1px); }
         .scroll-container { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        /* --- PREMIUM LANDING ANIMATIONS --- */
+        .svg-circle-bg { stroke-dasharray: 300; stroke-dashoffset: 300; animation: drawCircle 1.5s ease-out forwards; }
+        .svg-check { stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawCheck 1s 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .svg-hand { transform-origin: 50% 50%; animation: spinClock 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
+        
+        @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+        @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+        @keyframes spinClock { 
+            0% { transform: rotate(0deg) scale(0.5); opacity: 0; } 
+            100% { transform: rotate(360deg) scale(1); opacity: 1; } 
+        }
+
         @media (min-width: 768px) { .view-section { display: flex !important; animation: none; } }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans h-[100dvh] flex flex-col overflow-hidden dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
+<body class="bg-gray-50 text-gray-900 font-sans h-[100dvh] flex flex-col overflow-hidden dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200">
 
-    <!-- LANDING SCREEN -->
-    <div id="landing-screen" class="fixed inset-0 z-[100] bg-white dark:bg-gray-900 flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
-        <div class="relative w-36 h-36 mb-6 animate-fade-in-up">
+    <!-- LANDING SCREEN (PREMIUM ANIMATED SVG) -->
+    <div id="landing-screen" class="fixed inset-0 z-[100] bg-white dark:bg-gray-950 flex flex-col items-center justify-center transition-opacity duration-700 ease-out">
+        <div class="relative w-48 h-48 mb-8">
             <!-- Glow Effect -->
-            <div class="absolute inset-0 bg-blue-500 rounded-full opacity-20 animate-ping blur-xl"></div>
+            <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
             
-            <!-- LOGO 3D UTAMA (TARGET) -->
-            <img src="https://cdn-icons-png.flaticon.com/512/8649/8649607.png" 
-                 class="relative w-full h-full object-contain animate-float drop-shadow-2xl" 
-                 alt="FokusFlow Logo">
+            <!-- CUSTOM ANIMATED SVG LOGO -->
+            <svg class="w-full h-full drop-shadow-2xl" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                
+                <!-- Outer Ring (Static Track) -->
+                <circle cx="100" cy="100" r="80" stroke="#e2e8f0" stroke-width="12" class="dark:stroke-gray-800" />
+                
+                <!-- Inner Ring (Self Drawing) -->
+                <circle cx="100" cy="100" r="80" stroke="url(#grad1)" stroke-width="12" stroke-linecap="round" class="svg-circle-bg" transform="rotate(-90 100 100)" />
+                
+                <!-- Clock Hands Container -->
+                <g class="svg-hand">
+                    <!-- Center Dot -->
+                    <circle cx="100" cy="100" r="10" fill="#1e3a8a" />
+                    <!-- Hour Hand -->
+                    <rect x="94" y="50" width="12" height="50" rx="6" fill="#1e3a8a" />
+                    <!-- Minute Hand -->
+                    <rect x="94" y="94" width="12" height="40" rx="6" fill="#60a5fa" transform="rotate(90 100 100)" />
+                </g>
+
+                <!-- Floating Particles (Optional decoration) -->
+                <circle cx="170" cy="50" r="6" fill="#f59e0b" class="animate-bounce-slow" />
+                <circle cx="30" cy="150" r="4" fill="#ec4899" class="animate-bounce-slow" style="animation-delay: 0.5s" />
+            </svg>
         </div>
         
-        <div class="text-center animate-fade-in-up" style="animation-delay: 0.2s; opacity: 0;">
-            <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">FokusFlow Pro</h1>
-            <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Master Your Time</p>
-        </div>
-        
-        <!-- Loading Bar -->
-        <div class="w-48 h-1.5 bg-gray-100 rounded-full mt-10 overflow-hidden dark:bg-gray-800 animate-fade-in-up shadow-inner" style="animation-delay: 0.4s; opacity: 0;">
-            <div class="h-full bg-brand-500 animate-[loading_1.5s_ease-in-out_infinite]" style="width: 50%"></div>
+        <div class="text-center opacity-0 animate-[fadeUp_0.8s_ease-out_0.5s_forwards]">
+            <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 mb-2">Your Timer</h1>
+            <p class="text-sm font-semibold text-gray-400 uppercase tracking-[0.3em]">Waktu Anda, Kendali Anda</p>
         </div>
     </div>
 
     <!-- HEADER -->
-    <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 shrink-0 z-30 dark:bg-gray-800 dark:border-gray-700 transition-colors duration-200">
-        <div class="flex items-center gap-3 group cursor-pointer">
-            <!-- LOGO HEADER -->
-            <img src="https://cdn-icons-png.flaticon.com/512/8649/8649607.png" 
-                 class="w-10 h-10 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300" 
-                 alt="Logo">
-            <h1 class="font-bold text-lg tracking-tight hidden sm:block group-hover:text-brand-600 transition-colors">FokusFlow Pro</h1>
+    <header class="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-6 shrink-0 z-30 dark:bg-gray-900/80 dark:border-gray-800 transition-colors duration-200">
+        <div class="flex items-center gap-3 group cursor-pointer" onclick="switchMobileView('view-inbox')">
+            <!-- HEADER LOGO (Mini version of Landing) -->
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform duration-300">
+                <i class="fa-solid fa-clock text-lg"></i>
+            </div>
+            <h1 class="font-bold text-lg tracking-tight hidden sm:block text-gray-800 dark:text-white group-hover:text-brand-600 transition-colors">Your Timer</h1>
         </div>
         
         <div class="flex-1 max-w-xl mx-6 hidden md:flex relative">
             <input type="text" id="quick-add-desktop" 
-                class="w-full bg-gray-100 border border-transparent rounded-xl py-2 pl-4 pr-20 text-sm focus:bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 placeholder-gray-500"
-                placeholder="Tambah tugas baru (Enter)...">
-            <div class="absolute right-1 top-1 bottom-1 flex gap-1">
-                <button onclick="setCategory('deep')" id="btn-cat-deep" class="px-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-200 hover:text-blue-600 dark:hover:bg-gray-500 transition" title="Deep Work">D</button>
-                <button onclick="setCategory('meet')" id="btn-cat-meet" class="px-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-200 hover:text-amber-600 dark:hover:bg-gray-500 transition" title="Meeting">M</button>
+                class="w-full bg-gray-100 border-none rounded-2xl py-2.5 pl-5 pr-20 text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 transition-all dark:bg-gray-800 dark:text-white dark:focus:bg-gray-700 placeholder-gray-400"
+                placeholder="Apa fokus Anda hari ini? (Enter)">
+            <div class="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1">
+                <button onclick="setCategory('deep')" id="btn-cat-deep" class="px-3 rounded-xl text-xs font-bold text-gray-500 hover:bg-white hover:shadow-sm hover:text-blue-600 dark:hover:bg-gray-600 transition">Deep</button>
+                <button onclick="setCategory('meet')" id="btn-cat-meet" class="px-3 rounded-xl text-xs font-bold text-gray-500 hover:bg-white hover:shadow-sm hover:text-amber-600 dark:hover:bg-gray-600 transition">Meet</button>
             </div>
         </div>
 
         <div class="flex items-center gap-2">
-            <button onclick="requestNotificationPermission()" id="btn-notif" class="w-10 h-10 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-brand-500 dark:hover:bg-gray-700 transition flex items-center justify-center" title="Aktifkan Notifikasi">
-                <i class="fa-solid fa-bell"></i>
+            <button onclick="requestNotificationPermission()" id="btn-notif" class="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-400 hover:text-brand-500 dark:hover:bg-gray-800 transition flex items-center justify-center">
+                <i class="fa-regular fa-bell"></i>
             </button>
-            <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-700 transition flex items-center justify-center">
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-800 transition flex items-center justify-center">
                 <i class="fa-solid fa-moon dark:hidden"></i>
                 <i class="fa-solid fa-sun hidden dark:block"></i>
             </button>
-            <button onclick="toggleZenMode()" class="w-10 h-10 rounded-xl hover:bg-gray-100 text-gray-500 dark:text-gray-400 dark:hover:bg-gray-700 transition flex items-center justify-center" title="Mode Zen">
+            <button onclick="toggleZenMode()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition flex items-center justify-center" title="Mode Zen">
                 <i class="fa-solid fa-expand"></i>
             </button>
         </div>
@@ -135,138 +162,178 @@
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 flex overflow-hidden relative">
+        
         <!-- PANEL 1: INBOX -->
-        <aside id="view-inbox" class="view-section md:w-72 bg-gray-50 md:border-r border-gray-200 flex-col md:flex shrink-0 z-20 w-full dark:bg-gray-900 dark:border-gray-700">
-            <div class="px-4 py-4 flex justify-between items-center">
-                <h2 class="font-bold text-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">Inbox</h2>
-                <span id="inbox-count" class="text-xs font-bold bg-gray-200 px-2.5 py-0.5 rounded-full text-gray-600 dark:bg-gray-700 dark:text-gray-300">0</span>
+        <aside id="view-inbox" class="view-section md:w-80 bg-gray-50 md:border-r border-gray-200 flex-col md:flex shrink-0 z-20 w-full dark:bg-gray-950 dark:border-gray-800">
+            <div class="px-6 py-5 flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-lg text-gray-900 dark:text-white">Inbox</h2>
+                    <p class="text-xs text-gray-500">Draft tugas Anda</p>
+                </div>
+                <span id="inbox-count" class="text-xs font-bold bg-white border border-gray-200 px-3 py-1 rounded-full text-gray-600 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300">0</span>
             </div>
-            <div class="px-4 pb-2 md:hidden">
-                <input type="text" id="quick-add-mobile" 
-                    class="w-full bg-white border border-gray-300 rounded-xl py-3 px-4 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="+ Tugas...">
+            <div class="px-5 pb-2 md:hidden">
+                <div class="relative">
+                    <input type="text" id="quick-add-mobile" 
+                        class="w-full bg-white border-none shadow-sm rounded-2xl py-3.5 px-5 text-sm focus:ring-2 focus:ring-brand-500 dark:bg-gray-900 dark:text-white" placeholder="Tambah tugas baru...">
+                    <button class="absolute right-2 top-2 p-1.5 bg-brand-600 rounded-xl text-white shadow-lg"><i class="fa-solid fa-plus"></i></button>
+                </div>
             </div>
-            <div id="inbox-list" class="flex-1 overflow-y-auto px-4 py-2 space-y-2 pb-24 md:pb-4" ondragover="allowDrop(event)" ondrop="dropBackToInbox(event)"></div>
+            <div id="inbox-list" class="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-32 md:pb-4" ondragover="allowDrop(event)" ondrop="dropBackToInbox(event)"></div>
         </aside>
 
         <!-- PANEL 2: CALENDAR -->
-        <section id="view-calendar" class="view-section active flex-1 bg-white relative flex-col w-full bg-grid dark:bg-gray-800">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-white/90 backdrop-blur sticky top-0 z-20 dark:bg-gray-800/90 dark:border-gray-700">
+        <section id="view-calendar" class="view-section active flex-1 bg-white relative flex-col w-full bg-grid dark:bg-gray-900">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white/80 backdrop-blur sticky top-0 z-20 dark:bg-gray-900/80 dark:border-gray-800">
                 <div>
-                    <h2 id="current-date" class="text-xl font-bold text-gray-900 dark:text-white">Hari Ini</h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium" id="current-full-date">...</p>
+                    <h2 id="current-date" class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Hari Ini</h2>
+                    <p class="text-xs text-brand-600 font-semibold uppercase tracking-wider" id="current-full-date">...</p>
                 </div>
-                <button onclick="finishDay()" class="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition dark:bg-brand-900/30 dark:text-brand-400 dark:hover:bg-brand-900/50">
-                    <i class="fa-solid fa-box-archive mr-1"></i> Selesai Hari Ini
+                <button onclick="finishDay()" class="text-xs font-bold text-red-500 bg-red-50 px-4 py-2 rounded-xl hover:bg-red-100 transition dark:bg-red-900/20 dark:hover:bg-red-900/40">
+                    Selesai Hari Ini
                 </button>
             </div>
-            <div id="calendar-grid" class="flex-1 overflow-y-auto relative custom-scrollbar pb-24 md:pb-0 scroll-smooth">
-                <div id="time-slots-container" class="relative min-h-[1280px] pt-2"></div>
+            <div id="calendar-grid" class="flex-1 overflow-y-auto relative custom-scrollbar pb-32 md:pb-0 scroll-smooth">
+                <div id="time-slots-container" class="relative min-h-[1280px] pt-4 px-2"></div>
                 <div id="now-indicator" class="absolute left-0 right-0 flex items-center z-20 pointer-events-none" style="display:none; top: 0px;">
-                    <div class="w-full h-[1px] bg-red-500 shadow-sm"></div>
-                    <div class="absolute left-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-r shadow-md" id="now-time-label">00:00</div>
+                    <div class="w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                    <div class="absolute left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-r-lg shadow-md" id="now-time-label">00:00</div>
                 </div>
             </div>
         </section>
 
         <!-- PANEL 3: DASHBOARD -->
-        <aside id="view-focus" class="view-section md:w-80 bg-gray-50 md:border-l border-gray-200 flex-col md:flex shrink-0 z-20 w-full dark:bg-gray-900 dark:border-gray-700">
-            <div class="flex border-b border-gray-200 dark:border-gray-700">
-                <button onclick="switchRightTab('tab-focus')" id="btn-tab-focus" class="flex-1 py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 transition">Fokus</button>
-                <button onclick="switchRightTab('tab-analytics')" id="btn-tab-analytics" class="flex-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent transition">Laporan</button>
+        <aside id="view-focus" class="view-section md:w-96 bg-gray-50 md:border-l border-gray-200 flex-col md:flex shrink-0 z-20 w-full dark:bg-gray-950 dark:border-gray-800">
+            <div class="flex border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <button onclick="switchRightTab('tab-focus')" id="btn-tab-focus" class="flex-1 py-4 text-sm font-bold text-brand-600 border-b-2 border-brand-600 transition">Fokus</button>
+                <button onclick="switchRightTab('tab-analytics')" id="btn-tab-analytics" class="flex-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white border-b-2 border-transparent transition">Laporan</button>
             </div>
-            <div class="flex-1 overflow-y-auto scroll-container pb-24 md:pb-0">
+
+            <div class="flex-1 overflow-y-auto scroll-container pb-32 md:pb-0 p-6">
+                
                 <!-- TAB 1: FOCUS -->
-                <div id="tab-focus" class="min-h-full flex flex-col p-6 items-center justify-center animate-fade-in-up">
-                    <div class="mb-10 text-center">
-                        <div id="timer-display" class="text-7xl font-light text-gray-900 font-mono tracking-tighter dark:text-white transition-all duration-300">25:00</div>
-                        <div id="timer-label" class="text-sm text-gray-400 mt-2 uppercase tracking-widest font-bold">Deep Work</div>
+                <div id="tab-focus" class="min-h-full flex flex-col items-center justify-center animate-fade-in-up">
+                    <!-- Modern Timer Circle (Matching Logo Concept) -->
+                    <div class="relative w-64 h-64 mb-10 flex items-center justify-center">
+                        <svg class="absolute inset-0 w-full h-full transform -rotate-90">
+                            <!-- Background Ring -->
+                            <circle cx="50%" cy="50%" r="48%" stroke="#e2e8f0" stroke-width="6" fill="transparent" class="dark:stroke-gray-800" />
+                            <!-- Progress Ring -->
+                            <circle id="timer-ring" cx="50%" cy="50%" r="48%" stroke="url(#timerGrad)" stroke-width="6" fill="transparent" stroke-dasharray="301" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-1000 ease-linear" />
+                            <defs>
+                                <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#6366f1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="text-center z-10">
+                            <div id="timer-display" class="text-6xl font-bold text-gray-900 font-mono tracking-tighter dark:text-white">25:00</div>
+                            <div id="timer-label" class="text-xs font-bold text-brand-500 uppercase tracking-widest mt-2">Deep Work</div>
+                        </div>
                     </div>
-                    <div class="flex gap-3 w-full max-w-[220px] mb-8">
-                        <button onclick="startTimer()" id="btn-start" class="flex-1 bg-gray-900 hover:bg-black text-white py-3 rounded-xl text-sm font-bold transition dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 shadow-lg transform active:scale-95">Mulai</button>
-                        <button onclick="resetTimer()" class="px-5 py-3 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-xl text-sm transition dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"><i class="fa-solid fa-rotate-right"></i></button>
+
+                    <div class="flex gap-4 w-full max-w-[240px]">
+                        <button onclick="startTimer()" id="btn-start" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-4 rounded-2xl text-sm font-bold transition shadow-lg shadow-brand-500/30 hover:-translate-y-1 transform">Mulai</button>
+                        <button onclick="resetTimer()" class="px-6 py-4 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-2xl text-sm transition dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"><i class="fa-solid fa-rotate-right"></i></button>
                     </div>
                 </div>
+
                 <!-- TAB 2: ANALYTICS -->
-                <div id="tab-analytics" class="hidden p-6 space-y-6 animate-fade-in-up">
-                    <div class="bg-gradient-to-br from-brand-600 to-blue-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
+                <div id="tab-analytics" class="hidden space-y-6 animate-fade-in-up">
+                    <div class="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden group">
+                        <div class="absolute -right-6 -top-6 opacity-20 transform rotate-12 group-hover:scale-110 transition-transform duration-700">
                             <i class="fa-solid fa-trophy text-9xl"></i>
                         </div>
                         <div class="relative z-10">
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-1 rounded-md mb-3 inline-block backdrop-blur-sm">Motivasi Harian</span>
-                            <h3 id="daily-badge" class="text-xl font-bold mb-2">...</h3>
-                            <p id="daily-quote" class="text-sm text-blue-50 italic leading-relaxed opacity-90">...</p>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full mb-3 inline-block backdrop-blur-sm border border-white/10">Motivasi Harian</span>
+                            <h3 id="daily-badge" class="text-2xl font-bold mb-2">...</h3>
+                            <p id="daily-quote" class="text-sm text-blue-100 leading-relaxed font-medium">...</p>
                         </div>
                     </div>
+
                     <div class="flex justify-between items-center mt-8">
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Riwayat Aktivitas</h4>
-                        <select id="history-filter" onchange="renderHistory()" class="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-600 dark:text-gray-300 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Aktivitas</h4>
+                        <select id="history-filter" onchange="renderHistory()" class="text-xs bg-white dark:bg-gray-800 border-none shadow-sm rounded-lg px-3 py-2 text-gray-600 dark:text-gray-300 outline-none font-medium cursor-pointer hover:bg-gray-50">
                             <option value="today">Hari Ini</option>
-                            <option value="7days">7 Hari Terakhir</option>
-                            <option value="30days">30 Hari Terakhir</option>
+                            <option value="7days">7 Hari</option>
+                            <option value="30days">30 Hari</option>
                             <option value="all">Semua</option>
                         </select>
                     </div>
-                    <div id="history-list" class="space-y-4 pb-10"></div>
+
+                    <div id="history-list" class="space-y-3 pb-10"></div>
                 </div>
             </div>
         </aside>
     </main>
 
-    <!-- MOBILE NAV -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 flex justify-around items-center z-40 dark:bg-gray-800 dark:border-gray-700 pb-safe">
-        <button onclick="switchMobileView('view-inbox')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition group" data-target="view-inbox">
-            <i class="fa-solid fa-inbox mb-1 text-xl group-[.active]:text-brand-600 transition-transform group-[.active]:scale-110"></i><span class="text-[10px] font-medium group-[.active]:text-brand-600">Inbox</span>
+    <!-- FLOATING GLASS NAVIGATION (MODERN) -->
+    <nav class="md:hidden fixed bottom-6 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/50 dark:border-gray-700/50 dark:bg-gray-900/90 rounded-[2rem] shadow-glass z-50 flex justify-around items-center px-2 animate-[fadeUp_0.5s_ease-out_1.5s_backwards]">
+        <button onclick="switchMobileView('view-inbox')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-brand-600 transition group rounded-xl" data-target="view-inbox">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full group-[.active]:bg-brand-50 dark:group-[.active]:bg-brand-900/30 transition-colors">
+                <i class="fa-solid fa-inbox text-xl group-[.active]:text-brand-600"></i>
+            </div>
+            <span class="text-[10px] font-bold mt-1 text-gray-400 group-[.active]:text-brand-600">Inbox</span>
         </button>
-        <button onclick="switchMobileView('view-calendar')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition group active" data-target="view-calendar">
-            <i class="fa-regular fa-calendar mb-1 text-xl group-[.active]:text-brand-600 transition-transform group-[.active]:scale-110"></i><span class="text-[10px] font-medium group-[.active]:text-brand-600">Jadwal</span>
+        <button onclick="switchMobileView('view-calendar')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-brand-600 transition group rounded-xl active" data-target="view-calendar">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full group-[.active]:bg-brand-50 dark:group-[.active]:bg-brand-900/30 transition-colors">
+                <i class="fa-regular fa-calendar text-xl group-[.active]:text-brand-600"></i>
+            </div>
+            <span class="text-[10px] font-bold mt-1 text-gray-400 group-[.active]:text-brand-600">Jadwal</span>
         </button>
-        <button onclick="switchMobileView('view-focus', 'tab-focus')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition group" data-target="view-focus">
-            <i class="fa-regular fa-clock mb-1 text-xl group-[.active]:text-brand-600 transition-transform group-[.active]:scale-110"></i><span class="text-[10px] font-medium group-[.active]:text-brand-600">Fokus</span>
-        </button>
-        <button onclick="switchMobileView('view-focus', 'tab-analytics')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition group" data-target="view-analytics">
-            <i class="fa-solid fa-chart-pie mb-1 text-xl group-[.active]:text-brand-600 transition-transform group-[.active]:scale-110"></i><span class="text-[10px] font-medium group-[.active]:text-brand-600">Laporan</span>
+        <!-- Floating Focus Button -->
+        <div class="relative -top-8">
+            <button onclick="switchMobileView('view-focus', 'tab-focus')" class="nav-btn w-16 h-16 bg-gradient-to-b from-brand-500 to-brand-700 text-white rounded-full shadow-xl shadow-brand-500/40 flex items-center justify-center transition hover:scale-110 active:scale-95 border-[6px] border-gray-50 dark:border-gray-950" data-target="view-focus">
+                <i class="fa-solid fa-play text-2xl ml-1"></i>
+            </button>
+        </div>
+        <button onclick="switchMobileView('view-focus', 'tab-analytics')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 hover:text-brand-600 transition group rounded-xl" data-target="view-analytics">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full group-[.active]:bg-brand-50 dark:group-[.active]:bg-brand-900/30 transition-colors">
+                <i class="fa-solid fa-chart-pie text-xl group-[.active]:text-brand-600"></i>
+            </div>
+            <span class="text-[10px] font-bold mt-1 text-gray-400 group-[.active]:text-brand-600">Laporan</span>
         </button>
     </nav>
 
     <!-- MODAL SCHEDULE (With "Tandai Selesai") -->
-    <div id="schedule-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm animate-fade-in-up">
-        <div class="bg-white w-full md:max-w-sm rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden dark:bg-gray-800">
-            <div class="p-4 border-b border-gray-100 flex justify-between items-center dark:border-gray-700">
-                <span class="font-bold text-gray-900 dark:text-white">Atur Tugas</span>
-                <button onclick="closeScheduleModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <div id="schedule-modal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-end md:items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up">
+        <div class="bg-white w-full md:max-w-sm rounded-[2rem] shadow-2xl overflow-hidden dark:bg-gray-900 border border-white/20 transform transition-all">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center dark:border-gray-800">
+                <span class="font-bold text-lg text-gray-900 dark:text-white">Atur Tugas</span>
+                <button onclick="closeScheduleModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
-            <div class="p-5 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                <button id="modal-btn-complete" class="w-full py-3.5 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition flex items-center justify-center gap-2 transform active:scale-95">
-                    <i class="fa-solid fa-check-circle text-lg"></i> Tandai Selesai
+            <div class="p-6 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                <button id="modal-btn-complete" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition flex items-center justify-center gap-2 transform active:scale-95">
+                    <i class="fa-solid fa-check-circle text-xl"></i> Tandai Selesai
                 </button>
             </div>
 
-            <div class="p-5">
-                <p class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wide">Pindah Jadwal</p>
+            <div class="p-6">
+                <p class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wide">Pindah ke Jam</p>
                 <div class="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto custom-scrollbar" id="modal-time-grid"></div>
             </div>
 
-            <div class="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                <button onclick="moveTaskToInbox()" class="w-full py-3 text-sm font-bold text-gray-500 hover:bg-white hover:text-gray-800 rounded-xl dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition border border-transparent hover:border-gray-200 dark:hover:border-gray-600">Kembalikan ke Inbox</button>
+            <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+                <button onclick="moveTaskToInbox()" class="w-full py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 hover:text-gray-900 rounded-xl dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition">Kembalikan ke Inbox</button>
             </div>
         </div>
     </div>
 
     <!-- ZEN OVERLAY -->
     <div id="zen-overlay" class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center dark:bg-black p-6 text-center">
-        <div class="animate-pulse mb-8">
-            <span class="px-3 py-1 bg-brand-100 text-brand-600 rounded-full text-xs font-bold uppercase tracking-widest dark:bg-brand-900 dark:text-brand-300">Deep Work Mode</span>
+        <div class="animate-pulse mb-10">
+            <span class="px-4 py-1.5 bg-brand-50 text-brand-600 rounded-full text-xs font-bold uppercase tracking-widest border border-brand-100 dark:bg-brand-900 dark:text-brand-300 dark:border-brand-800">Deep Work Mode</span>
         </div>
-        <div id="zen-task-title" class="text-3xl md:text-5xl font-bold text-gray-900 mb-10 max-w-4xl leading-tight dark:text-white">...</div>
-        <div id="zen-timer" class="text-8xl md:text-9xl font-light font-mono text-gray-900 mb-16 dark:text-white tracking-tighter">25:00</div>
-        <button onclick="toggleZenMode()" class="px-8 py-3 border-2 border-gray-200 rounded-full text-gray-400 text-sm font-bold hover:text-gray-900 hover:border-gray-900 transition dark:border-gray-800 dark:hover:text-white dark:hover:border-white uppercase tracking-widest">Keluar</button>
+        <div id="zen-task-title" class="text-3xl md:text-6xl font-bold text-gray-900 mb-12 max-w-5xl leading-tight dark:text-white">...</div>
+        <div id="zen-timer" class="text-9xl md:text-[12rem] font-light font-mono text-gray-900 mb-20 dark:text-white tracking-tighter">25:00</div>
+        <button onclick="toggleZenMode()" class="px-10 py-4 border-2 border-gray-200 rounded-full text-gray-400 text-sm font-bold hover:text-gray-900 hover:border-gray-900 transition dark:border-gray-800 dark:hover:text-white dark:hover:border-white uppercase tracking-widest hover:scale-105 active:scale-95">Keluar</button>
     </div>
 
     <script>
         const CONFIG = { startHour: 6, endHour: 23, categories: { 'deep': { color: 'border-blue-500', dot: 'bg-blue-500' }, 'meet': { color: 'border-amber-500', dot: 'bg-amber-500' }, 'admin': { color: 'border-purple-500', dot: 'bg-purple-500' } } };
-        const STATE = { tasks: [], history: [], theme: localStorage.getItem('theme') || 'system', activeCategory: 'deep', timer: { time: 25*60, id: null, running: false }, modalTaskId: null };
+        const STATE = { tasks: [], history: [], theme: localStorage.getItem('theme') || 'system', activeCategory: 'deep', timer: { time: 25*60, id: null, running: false, total: 25*60 }, modalTaskId: null };
         const $ = (id) => document.getElementById(id);
 
         const DAILY_QUOTES = [{ badge: "The Initiator", text: "Perjalanan ribuan mil dimulai dengan satu langkah." }, { badge: "Focus Master", text: "Apa yang Anda fokuskan akan berkembang." }, { badge: "Time Architect", text: "Anda tidak bisa mengatur waktu, hanya diri sendiri." }, { badge: "Deep Worker", text: "Kualitas kerja = Waktu x Intensitas Fokus." }, { badge: "Resilience", text: "Kesuksesan adalah 1% inspirasi, 99% keringat." }, { badge: "The Finisher", text: "Memulai itu mudah, menyelesaikan itu seni." }, { badge: "Zen Mind", text: "Ketenangan adalah kekuatan tertinggi." }];
@@ -297,10 +364,25 @@
             setTimeout(() => { landing.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => { landing.remove(); }, 700); }, 2500);
         }
 
-        function requestNotificationPermission() { if (!("Notification" in window)) { alert("Browser ini tidak mendukung notifikasi."); } else { Notification.requestPermission().then(p => { if (p === "granted") { new Notification("Notifikasi Aktif", { body: "FokusFlow akan mengingatkan jadwal Anda.", icon: "https://cdn-icons-png.flaticon.com/512/8649/8649607.png" }); $('btn-notif').classList.add('text-brand-500'); } }); } }
-        function checkReminders() { const now = new Date(); const h = now.getHours(); const m = now.getMinutes(); if (m <= 1) { const task = STATE.tasks.find(t => t.hour === h && !t.completed); if (task && Notification.permission === "granted") { new Notification(`Waktunya: ${task.title}`, { body: "Mulai fokus sekarang!", icon: "https://cdn-icons-png.flaticon.com/512/8649/8649607.png" }); } } }
-        function switchRightTab(tabId) { ['tab-focus', 'tab-analytics'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById(tabId).classList.remove('hidden'); const btnFocus = $('btn-tab-focus'); const btnAnalytics = $('btn-tab-analytics'); if(tabId === 'tab-focus') { btnFocus.className = "flex-1 py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 transition"; btnAnalytics.className = "flex-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent transition"; } else { btnAnalytics.className = "flex-1 py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 transition"; btnFocus.className = "flex-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 border-b-2 border-transparent transition"; renderHistory(); } }
-        function switchMobileView(viewId, subTabId = null) { document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); $(viewId).classList.add('active'); if (viewId === 'view-focus' && subTabId) switchRightTab(subTabId); document.querySelectorAll('.nav-btn').forEach(btn => { let isActive = false; if (btn.dataset.target === 'view-inbox' && viewId === 'view-inbox') isActive = true; if (btn.dataset.target === 'view-calendar' && viewId === 'view-calendar') isActive = true; if (btn.dataset.target === 'view-focus' && viewId === 'view-focus' && subTabId === 'tab-focus') isActive = true; if (btn.dataset.target === 'view-analytics' && viewId === 'view-focus' && subTabId === 'tab-analytics') isActive = true; if(isActive) { btn.classList.add('text-brand-600', 'active'); btn.classList.remove('text-gray-400'); } else { btn.classList.remove('text-brand-600', 'active'); btn.classList.add('text-gray-400'); } }); }
+        function requestNotificationPermission() { if (!("Notification" in window)) { alert("Browser ini tidak mendukung notifikasi."); } else { Notification.requestPermission().then(p => { if (p === "granted") { new Notification("Notifikasi Aktif", { body: "Your Timer siap.", icon: "https://cdn-icons-png.flaticon.com/512/3176/3176373.png" }); $('btn-notif').classList.add('text-brand-500'); } }); } }
+        function checkReminders() { const now = new Date(); const h = now.getHours(); const m = now.getMinutes(); if (m <= 1) { const task = STATE.tasks.find(t => t.hour === h && !t.completed); if (task && Notification.permission === "granted") { new Notification(`Waktunya: ${task.title}`, { body: "Mulai fokus sekarang!", icon: "https://cdn-icons-png.flaticon.com/512/3176/3176373.png" }); } } }
+        
+        function switchRightTab(tabId) { ['tab-focus', 'tab-analytics'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById(tabId).classList.remove('hidden'); const btnFocus = $('btn-tab-focus'); const btnAnalytics = $('btn-tab-analytics'); if(tabId === 'tab-focus') { btnFocus.className = "flex-1 py-4 text-sm font-bold text-brand-600 border-b-2 border-brand-600 transition"; btnAnalytics.className = "flex-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent transition"; } else { btnAnalytics.className = "flex-1 py-4 text-sm font-bold text-brand-600 border-b-2 border-brand-600 transition"; btnFocus.className = "flex-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent transition"; renderHistory(); } }
+        
+        function switchMobileView(viewId, subTabId = null) { 
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); $(viewId).classList.add('active'); 
+            if (viewId === 'view-focus' && subTabId) switchRightTab(subTabId); 
+            document.querySelectorAll('.nav-btn').forEach(btn => { 
+                let isActive = false; 
+                if (btn.dataset.target === 'view-inbox' && viewId === 'view-inbox') isActive = true;
+                if (btn.dataset.target === 'view-calendar' && viewId === 'view-calendar') isActive = true;
+                if (btn.dataset.target === 'view-focus' && viewId === 'view-focus' && subTabId === 'tab-focus') isActive = true;
+                if (btn.dataset.target === 'view-analytics' && viewId === 'view-focus' && subTabId === 'tab-analytics') isActive = true;
+                
+                if(isActive) { btn.classList.add('active', 'text-brand-600'); btn.classList.remove('text-gray-400'); } 
+                else { btn.classList.remove('active', 'text-brand-600'); btn.classList.add('text-gray-400'); } 
+            }); 
+        }
         
         function renderHistory() {
             const list = $('history-list'); const filter = $('history-filter').value; list.innerHTML = '';
@@ -314,8 +396,8 @@
             const grouped = {}; all.forEach(t => { const k = t.dateObj.toLocaleDateString('id-ID', {weekday:'long',day:'numeric',month:'short'}); if(!grouped[k]) grouped[k]=[]; grouped[k].push(t); });
             if (Object.keys(grouped).length === 0) { list.innerHTML = `<div class="text-center py-8 text-xs text-gray-400">Tidak ada riwayat.</div>`; return; }
             for (const [d, tasks] of Object.entries(grouped)) {
-                const div = document.createElement('div'); div.innerHTML = `<h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4 sticky top-0 bg-gray-50 dark:bg-gray-900 py-1 z-10">${d}</h5>`;
-                tasks.forEach(t => { div.innerHTML += `<div class="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm mb-2"><div class="w-2 h-2 rounded-full ${CONFIG.categories[t.category].dot}"></div><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-600 dark:text-gray-300 line-through truncate">${t.title}</p><p class="text-[10px] text-gray-400">Selesai jam ${t.dateObj.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</p></div><i class="fa-solid fa-check text-green-500 text-xs"></i></div>`; });
+                const div = document.createElement('div'); div.innerHTML = `<h5 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 mt-5 sticky top-0 bg-white dark:bg-gray-900 py-1 z-10 opacity-80 backdrop-blur">${d}</h5>`;
+                tasks.forEach(t => { div.innerHTML += `<div class="flex items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm mb-2"><div class="w-2 h-2 rounded-full ${CONFIG.categories[t.category].dot}"></div><div class="flex-1 min-w-0"><p class="text-sm font-semibold text-gray-600 dark:text-gray-300 line-through truncate decoration-gray-400">${t.title}</p><p class="text-[10px] text-gray-400 mt-0.5">Selesai jam ${t.dateObj.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</p></div><div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></div></div>`; });
                 list.appendChild(div);
             }
         }
@@ -323,52 +405,42 @@
         function finishDay() { if(confirm("Selesaikan hari ini?")) { const c = STATE.tasks.filter(t => t.completed); STATE.history.push(...c); STATE.tasks = STATE.tasks.filter(t => !t.completed); STATE.tasks.forEach(t => t.hour = null); saveData(); renderTasks(); renderHistory(); } }
         function initTheme() { if (STATE.theme === 'dark' || (STATE.theme === 'system' && window.matchMedia('(prefers_color_scheme: dark)').matches)) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }
         function toggleTheme() { const h = document.documentElement; if (h.classList.contains('dark')) { h.classList.remove('dark'); localStorage.setItem('theme', 'light'); } else { h.classList.add('dark'); localStorage.setItem('theme', 'dark'); } }
-        function setCategory(c) { STATE.activeCategory = c; ['deep', 'meet'].forEach(x => { const b = $(`btn-cat-${x}`); if (x === c) b.classList.add('text-brand-600', 'bg-gray-100'); else b.classList.remove('text-brand-600', 'bg-gray-100'); }); }
+        function setCategory(c) { STATE.activeCategory = c; ['deep', 'meet'].forEach(x => { const b = $(`btn-cat-${x}`); if (x === c) b.classList.add('bg-gray-100', 'text-brand-600'); else b.classList.remove('bg-gray-100', 'text-brand-600'); }); }
         function addTask(t) { STATE.tasks.push({ id: crypto.randomUUID(), title: t, category: STATE.activeCategory, hour: null, completed: false, createdAt: new Date().toISOString() }); saveData(); renderTasks(); }
         function toggleComplete(id) { const t = STATE.tasks.find(x => x.id === id); if(t) { t.completed = !t.completed; t.completedAt = t.completed ? new Date().toISOString() : null; saveData(); renderTasks(); renderHistory(); } }
         
-        function completeTaskFromModal(id) {
-            const task = STATE.tasks.find(t => t.id === id);
-            if(task) {
-                task.completed = true;
-                task.completedAt = new Date().toISOString();
-                saveData(); renderTasks(); renderHistory(); closeScheduleModal();
-            }
-        }
-
+        function completeTaskFromModal(id) { const t = STATE.tasks.find(x => x.id === id); if(t) { t.completed = true; t.completedAt = new Date().toISOString(); saveData(); renderTasks(); renderHistory(); closeScheduleModal(); } }
         function deleteTask(id) { if(confirm("Hapus?")) { STATE.tasks = STATE.tasks.filter(t => t.id !== id); saveData(); renderTasks(); renderHistory(); } }
-        function renderCalendar() { const c = $('time-slots-container'); c.innerHTML = ''; for(let i=CONFIG.startHour; i<=CONFIG.endHour; i++) { const d = document.createElement('div'); d.className = "group h-20 border-b border-gray-100 relative flex hover:bg-gray-50 transition-colors dark:border-gray-800 dark:hover:bg-gray-800/50"; d.innerHTML = `<div class="w-16 flex-shrink-0 text-xs text-gray-400 text-right pr-4 pt-2 font-mono">${i.toString().padStart(2,'0')}:00</div><div class="flex-1 relative h-full drop-zone" data-hour="${i}"></div>`; const z = d.querySelector('.drop-zone'); z.ondragover = e => { e.preventDefault(); d.classList.add('bg-blue-50', 'dark:bg-blue-900/20'); }; z.ondragleave = () => d.classList.remove('bg-blue-50', 'dark:bg-blue-900/20'); z.ondrop = e => { e.preventDefault(); d.classList.remove('bg-blue-50', 'dark:bg-blue-900/20'); scheduleTask(e.dataTransfer.getData('text'), i); }; c.appendChild(d); } }
+        function renderCalendar() { const c = $('time-slots-container'); c.innerHTML = ''; for(let i=CONFIG.startHour; i<=CONFIG.endHour; i++) { const d = document.createElement('div'); d.className = "group h-24 border-b border-gray-100 relative flex hover:bg-gray-50 transition-colors dark:border-gray-800 dark:hover:bg-gray-800/50"; d.innerHTML = `<div class="w-14 flex-shrink-0 text-[10px] text-gray-400 text-right pr-3 pt-3 font-mono border-r border-dashed border-gray-200 dark:border-gray-700">${i.toString().padStart(2,'0')}:00</div><div class="flex-1 relative h-full drop-zone" data-hour="${i}"></div>`; const z = d.querySelector('.drop-zone'); z.ondragover = e => { e.preventDefault(); d.classList.add('bg-blue-50/50', 'dark:bg-blue-900/10'); }; z.ondragleave = () => d.classList.remove('bg-blue-50/50', 'dark:bg-blue-900/10'); z.ondrop = e => { e.preventDefault(); d.classList.remove('bg-blue-50/50', 'dark:bg-blue-900/10'); scheduleTask(e.dataTransfer.getData('text'), i); }; c.appendChild(d); } }
         function renderTasks() { $('inbox-list').innerHTML = ''; document.querySelectorAll('.task-item').forEach(e => e.remove()); let count = 0; STATE.tasks.forEach(task => { const el = createTaskEl(task); if (task.hour === null) { $('inbox-list').appendChild(el); count++; } else { const slot = document.querySelector(`.drop-zone[data-hour="${task.hour}"]`); if(slot) slot.appendChild(el); } }); $('inbox-count').innerText = count; }
-        function createTaskEl(task) { const el = document.createElement('div'); el.draggable = true; el.className = `task-item cursor-grab active:cursor-grabbing select-none group relative bg-white border border-gray-200 rounded-lg p-2.5 text-sm shadow-subtle mb-2 transition-all hover:border-brand-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:border-gray-600 hover:shadow-md`; if(task.hour !== null) el.className += ` absolute left-1 right-1 top-1 bottom-1 mb-0 z-10 overflow-hidden border-l-4 ${CONFIG.categories[task.category].color}`; if(task.completed) el.classList.add('opacity-50', 'line-through', 'grayscale'); el.innerHTML = `<div class="flex items-start gap-3 h-full"><button onclick="toggleComplete('${task.id}')" class="mt-0.5 text-gray-300 hover:text-green-500 transition shrink-0 dark:text-gray-600"><i class="fa-${task.completed ? 'solid fa-circle-check text-green-500' : 'regular fa-circle'}"></i></button><span class="font-medium truncate leading-tight flex-1">${task.title}</span></div><div class="absolute inset-0 z-20" onclick="handleTaskClick('${task.id}', event)"></div><button onclick="deleteTask('${task.id}')" class="absolute right-2 top-2 hidden group-hover:block z-30 text-xs text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>`; el.ondragstart = e => { e.dataTransfer.setData('text', task.id); setTimeout(()=>el.classList.add('hidden'),0); }; el.ondragend = () => el.classList.remove('hidden'); return el; }
+        
+        function createTaskEl(task) { const el = document.createElement('div'); el.draggable = true; el.className = `task-item cursor-grab active:cursor-grabbing select-none group relative bg-white border border-gray-200 rounded-xl p-3 text-sm shadow-sm mb-2 transition-all hover:border-brand-400 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:border-gray-500 hover:shadow-md`; if(task.hour !== null) el.className += ` absolute left-1 right-1 top-1 bottom-1 mb-0 z-10 overflow-hidden border-l-[3px] ${CONFIG.categories[task.category].color}`; if(task.completed) el.classList.add('opacity-60', 'grayscale'); el.innerHTML = `<div class="flex items-start gap-3 h-full"><button onclick="toggleComplete('${task.id}')" class="mt-0.5 text-gray-300 hover:text-green-500 transition shrink-0 dark:text-gray-600"><i class="fa-${task.completed ? 'solid fa-circle-check text-green-500' : 'regular fa-circle'} text-lg"></i></button><span class="font-medium truncate leading-tight flex-1 ${task.completed ? 'line-through decoration-gray-400' : ''}">${task.title}</span></div><div class="absolute inset-0 z-20" onclick="handleTaskClick('${task.id}', event)"></div><button onclick="deleteTask('${task.id}')" class="absolute right-2 top-2 hidden group-hover:block z-30 text-xs text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 rounded p-1"><i class="fa-solid fa-xmark"></i></button>`; el.ondragstart = e => { e.dataTransfer.setData('text', task.id); setTimeout(()=>el.classList.add('hidden'),0); }; el.ondragend = () => el.classList.remove('hidden'); return el; }
         
         function handleTaskClick(id, e) { if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return; if(window.innerWidth < 768 || STATE.tasks.find(t=>t.id===id).hour !== null) openScheduleModal(id); }
         function scheduleTask(id, hour) { const t = STATE.tasks.find(x => x.id === id); if(t) { t.hour = hour; saveData(); renderTasks(); renderHistory(); } }
-        
-        function openScheduleModal(id) {
-            STATE.modalTaskId = id; const task = STATE.tasks.find(t => t.id === id);
-            const btnComplete = $('modal-btn-complete');
-            if(task.completed) {
-                 btnComplete.classList.add('opacity-50', 'cursor-not-allowed');
-                 btnComplete.innerHTML = '<i class="fa-solid fa-check-double text-lg"></i> Sudah Selesai';
-                 btnComplete.onclick = null;
-            } else {
-                 btnComplete.classList.remove('opacity-50', 'cursor-not-allowed');
-                 btnComplete.innerHTML = '<i class="fa-solid fa-check-circle text-lg"></i> Tandai Selesai';
-                 btnComplete.onclick = () => completeTaskFromModal(id);
-            }
-            const grid = $('modal-time-grid'); grid.innerHTML = '';
-            for(let i=CONFIG.startHour; i<=CONFIG.endHour; i++) { const btn = document.createElement('button'); btn.className = "py-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-brand-500 hover:text-white transition text-sm font-mono font-medium dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"; btn.innerText = `${i}:00`; btn.onclick = () => { scheduleTask(id, i); closeScheduleModal(); }; grid.appendChild(btn); }
-            $('schedule-modal').classList.remove('hidden');
-        }
+        function openScheduleModal(id) { STATE.modalTaskId = id; const task = STATE.tasks.find(t => t.id === id); const btnComplete = $('modal-btn-complete'); if(task.completed) { btnComplete.classList.add('opacity-50', 'cursor-not-allowed'); btnComplete.innerHTML = '<i class="fa-solid fa-check-double text-lg"></i> Sudah Selesai'; btnComplete.onclick = null; } else { btnComplete.classList.remove('opacity-50', 'cursor-not-allowed'); btnComplete.innerHTML = '<i class="fa-solid fa-check-circle text-lg"></i> Tandai Selesai'; btnComplete.onclick = () => completeTaskFromModal(id); } const grid = $('modal-time-grid'); grid.innerHTML = ''; for(let i=CONFIG.startHour; i<=CONFIG.endHour; i++) { const btn = document.createElement('button'); btn.className = "py-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-brand-500 hover:text-white transition text-sm font-mono font-medium dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"; btn.innerText = `${i}:00`; btn.onclick = () => { scheduleTask(id, i); closeScheduleModal(); }; grid.appendChild(btn); } $('schedule-modal').classList.remove('hidden'); }
         function closeScheduleModal() { $('schedule-modal').classList.add('hidden'); }
         function moveTaskToInbox() { if(STATE.modalTaskId) { scheduleTask(STATE.modalTaskId, null); closeScheduleModal(); } }
         
         function startTimer() { if(STATE.timer.running) { clearInterval(STATE.timer.id); STATE.timer.running = false; $('btn-start').innerText = "Lanjut"; } else { STATE.timer.running = true; $('btn-start').innerText = "Jeda"; STATE.timer.id = setInterval(() => { STATE.timer.time--; if(STATE.timer.time <= 0) resetTimer(); updateTimerDisplay(); }, 1000); } }
-        function resetTimer() { clearInterval(STATE.timer.id); STATE.timer.running = false; STATE.timer.time = 25*60; $('btn-start').innerText = "Mulai"; updateTimerDisplay(); }
-        function updateTimerDisplay() { const m = Math.floor(STATE.timer.time / 60).toString().padStart(2,'0'); const s = (STATE.timer.time % 60).toString().padStart(2,'0'); $('timer-display').innerText = `${m}:${s}`; $('zen-timer').innerText = `${m}:${s}`; document.title = `${m}:${s} - Fokus`; }
+        function resetTimer() { clearInterval(STATE.timer.id); STATE.timer.running = false; STATE.timer.time = STATE.timer.total; $('btn-start').innerText = "Mulai"; updateTimerDisplay(); }
+        
+        // Updated Timer Display Logic for SVG Ring
+        function updateTimerDisplay() { 
+            const m = Math.floor(STATE.timer.time / 60).toString().padStart(2,'0'); 
+            const s = (STATE.timer.time % 60).toString().padStart(2,'0'); 
+            $('timer-display').innerText = `${m}:${s}`; $('zen-timer').innerText = `${m}:${s}`; document.title = `${m}:${s} - Fokus`; 
+            
+            // SVG Progress
+            const ring = $('timer-ring');
+            const total = STATE.timer.total;
+            const progress = (STATE.timer.time / total) * 301; // 301 is approx dasharray
+            ring.style.strokeDashoffset = 301 - progress;
+        }
+        
         function toggleZenMode() { $('zen-overlay').classList.toggle('hidden'); const active = STATE.tasks.find(t => t.hour === new Date().getHours()); $('zen-task-title').innerText = active ? active.title : "Fokus Bebas"; const overlay = $('zen-overlay'); if(!overlay.classList.contains('hidden')) { if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen(); } else { if(document.exitFullscreen) document.exitFullscreen(); } }
-        function updateNowLine() { const now = new Date(); const h = now.getHours(); if(h >= CONFIG.startHour && h <= CONFIG.endHour) { $('now-indicator').style.display = 'flex'; const top = ((h - CONFIG.startHour) * 80) + (now.getMinutes() * (80/60)); $('now-indicator').style.top = `${top}px`; $('now-time-label').innerText = `${h}:${now.getMinutes().toString().padStart(2,'0')}`; } else { $('now-indicator').style.display = 'none'; } }
-        function scrollToNow() { const h = new Date().getHours(); if(h > CONFIG.startHour) { $('calendar-grid').scrollTop = ((h - CONFIG.startHour) * 80) - 100; } }
+        function updateNowLine() { const now = new Date(); const h = now.getHours(); if(h >= CONFIG.startHour && h <= CONFIG.endHour) { $('now-indicator').style.display = 'flex'; const top = ((h - CONFIG.startHour) * 96) + (now.getMinutes() * (96/60)); $('now-indicator').style.top = `${top}px`; $('now-time-label').innerText = `${h}:${now.getMinutes().toString().padStart(2,'0')}`; } else { $('now-indicator').style.display = 'none'; } }
+        function scrollToNow() { const h = new Date().getHours(); if(h > CONFIG.startHour) { $('calendar-grid').scrollTop = ((h - CONFIG.startHour) * 96) - 100; } }
         function allowDrop(e) { e.preventDefault(); }
         function dropBackToInbox(e) { e.preventDefault(); scheduleTask(e.dataTransfer.getData('text'), null); }
         function saveData() { localStorage.setItem('fokusPro', JSON.stringify(STATE.tasks)); localStorage.setItem('fokusHistory', JSON.stringify(STATE.history)); }
