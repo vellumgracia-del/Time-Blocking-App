@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fokusflow-pro-v5'; // Versi naik
+const CACHE_NAME = 'your-timer-v1'; // Nama cache baru
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,8 +7,8 @@ const ASSETS_TO_CACHE = [
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
-  // Ikon Baru (Target 3D)
-  'https://cdn-icons-png.flaticon.com/512/8649/8649607.png'
+  // Ikon Baru (Jam)
+  'https://cdn-icons-png.flaticon.com/512/3176/3176373.png'
 ];
 
 self.addEventListener('install', (event) => {
